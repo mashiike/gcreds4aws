@@ -1,0 +1,26 @@
+run:
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+
+linters:
+  disable-all: true
+  enable:
+    - gocyclo
+    - staticcheck
+    - govet
+    - errcheck
+  presets:
+    - bugs
+    - unused
+    - format
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  errcheck:
+    ignore: fmt:.*,io/ioutil:^Read,^Close|^Write|^Shutdown
