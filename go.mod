@@ -1,6 +1,6 @@
 module github.com/mashiike/gcred4aws
 
-go 1.20.0
+go 1.20
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.30.0
