@@ -1,4 +1,4 @@
-package gcred4aws
+package gcreds4aws
 
 import (
 	"context"
