@@ -10,14 +10,14 @@ import (
 	"context"
 	"log"
 
-	"github.com/mashiike/gcred4aws"
+	"github.com/mashiike/gcreds4aws"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
 
 func main() {
-	defer gcred4aws.Close()
-	srv, err := sheets.NewService(context.Background(), gcred4aws.WithCredentials(ctx), option.WithScopes(sheets.SpreadsheetsReadonlyScope))
+	defer gcreds4aws.Close()
+	srv, err := sheets.NewService(context.Background(), gcreds4aws.WithCredentials(ctx), option.WithScopes(sheets.SpreadsheetsReadonlyScope))
 	if err != nil {
 		log.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}
