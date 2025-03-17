@@ -16,6 +16,10 @@ updates:
         patterns:
           - "github.com/aws/aws-sdk-go-v2/*"
           - "github.com/aws/aws-sdk-go-v2"
+      google-golang-org:
+        patterns:
+          - "google.golang.org/*"
+          - "google.golang.org"
   - package-ecosystem: "github-actions"
     directory: "/"
     open-pull-requests-limit: 5
