@@ -222,8 +222,21 @@ func (mgr *CredentialsManager) newCredentialsOptionFromSSM(ctx context.Context, 
 	if err != nil {
 		return nil, err
 	}
+	parts := strings.Split(arnObj.Resource, "/")
+	if len(parts) > 1 && parts[0] == "parameter" {
+		parts = parts[1:]
+	}
+	if len(parts) == 0 {
+		return nil, errors.New("invalid ARN: resource is empty")
+	}
+	var name string
+	if len(parts) == 1 {
+		name = parts[0]
+	} else {
+		name = "/" + strings.Join(parts, "/")
+	}
 	input := &ssm.GetParameterInput{
-		Name:           aws.String(strings.TrimPrefix(arnObj.Resource, "parameter/")),
+		Name:           aws.String(name),
 		WithDecryption: aws.Bool(true),
 	}
 	output, err := client.GetParameter(ctx, input)

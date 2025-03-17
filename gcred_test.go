@@ -41,3 +41,25 @@ func TestNewCredentialsOptionWithSSM(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, opt)
 }
+
+func TestNewCredentialsOptionWithSSM_Prefix(t *testing.T) {
+	mockClient := new(MockSSMClient)
+	mockClient.On("GetParameter", mock.Anything, mock.MatchedBy(
+		func(input *ssm.GetParameterInput) bool {
+			return *input.Name == "/prefix/test-parameter"
+		},
+	)).Return(&ssm.GetParameterOutput{
+		Parameter: &types.Parameter{
+			Value: aws.String(`{"type":"external_account","audience":"//iam.googleapis.com/projects/123/locations/global/workloadIdentityPools/pool/providers/provider","subject_token_type":"urn:ietf:params:aws:token-type:aws4_request","service_account_impersonation_url":"https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/service-account-email:generateAccessToken","token_url":"https://sts.googleapis.com/v1/token"}`),
+		},
+	}, nil)
+
+	SetSSMClient(mockClient)
+
+	t.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "arn:aws:ssm:us-east-1:123456789012:parameter/prefix/test-parameter")
+
+	ctx := context.Background()
+	opt, err := NewCredentials(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, opt)
+}
