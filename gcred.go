@@ -223,7 +223,7 @@ func (mgr *CredentialsManager) newCredentialsOptionFromSSM(ctx context.Context, 
 		return nil, err
 	}
 	input := &ssm.GetParameterInput{
-		Name:           aws.String(arnObj.Resource),
+		Name:           aws.String(strings.TrimPrefix(arnObj.Resource, "parameter/")),
 		WithDecryption: aws.Bool(true),
 	}
 	output, err := client.GetParameter(ctx, input)
