@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.1.5](https://github.com/mashiike/gcreds4aws/compare/v0.1.4...v0.1.5) - 2026-02-19
+- Bump actions/checkout from 4 to 6 by @dependabot[bot] in https://github.com/mashiike/gcreds4aws/pull/49
+- chore: update golangci-lint v2, Go version, and dependencies by @mashiike in https://github.com/mashiike/gcreds4aws/pull/51
+
 ## [v0.1.4](https://github.com/mashiike/gcreds4aws/compare/v0.1.3...v0.1.4) - 2025-03-17
 - Bump golang.org/x/crypto from 0.24.0 to 0.31.0 by @dependabot in https://github.com/mashiike/gcreds4aws/pull/37
 - Feature/prefixed ssm parameter name by @mashiike in https://github.com/mashiike/gcreds4aws/pull/39
