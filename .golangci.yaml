@@ -1,4 +1,4 @@
-run:
+version: "2"
 
 issues:
   exclude-use-default: false
@@ -8,7 +8,7 @@ issues:
         - gocyclo
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - gocyclo
     - staticcheck
@@ -17,10 +17,23 @@ linters:
   presets:
     - bugs
     - unused
-    - format
+  settings:
+    gocyclo:
+      min-complexity: 15
+    errcheck:
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - (io.Closer).Close
+        - (io.ReadCloser).Close
+        - (net/http.ResponseWriter).Write
+        - (*net/http.Server).Shutdown
 
-linters-settings:
-  gocyclo:
-    min-complexity: 15
-  errcheck:
-    ignore: fmt:.*,io/ioutil:^Read,^Close|^Write|^Shutdown
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true

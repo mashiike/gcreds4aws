@@ -211,8 +211,8 @@ func (mgr *CredentialsManager) getSSMClient(ctx context.Context) (GetParameterAP
 }
 
 func (mgr *CredentialsManager) newCredentialsOptionFromCache() (option.ClientOption, bool) {
-	if bs, _, ok := mgr.getCachedCredentials(); ok {
-		return option.WithCredentialsJSON(bs), true
+	if bs, cred, ok := mgr.getCachedCredentials(); ok {
+		return option.WithAuthCredentialsJSON(cred.credentialsType(), bs), true
 	}
 	return nil, false
 }
@@ -267,6 +267,21 @@ func (cred *credentials) notTemporary() bool {
 	return cred.Type != "external_account"
 }
 
+func (cred *credentials) credentialsType() option.CredentialsType {
+	switch cred.Type {
+	case "service_account":
+		return option.ServiceAccount
+	case "authorized_user":
+		return option.AuthorizedUser
+	case "impersonated_service_account":
+		return option.ImpersonatedServiceAccount
+	case "external_account":
+		return option.ExternalAccount
+	default:
+		return option.CredentialsType(cred.Type)
+	}
+}
+
 func (mgr *CredentialsManager) newCredentialsOptionFromBytes(_ context.Context, bs []byte) (option.ClientOption, error) {
 	if len(bs) == 0 {
 		return nil, errors.New("empty credentials")
@@ -283,7 +298,7 @@ func (mgr *CredentialsManager) newCredentialsOptionFromBytes(_ context.Context, 
 	}
 	if creds.notTemporary() {
 		mgr.setCredentialsCache(bs, &creds)
-		return option.WithCredentialsJSON(bs), nil
+		return option.WithAuthCredentialsJSON(creds.credentialsType(), bs), nil
 	}
 	rewrited, err := mgr.rewriteCredentialSource(&creds)
 	if err != nil {
@@ -294,7 +309,7 @@ func (mgr *CredentialsManager) newCredentialsOptionFromBytes(_ context.Context, 
 		return nil, fmt.Errorf("failed to marshal credentials: %w", err)
 	}
 	mgr.setCredentialsCache(bs, rewrited)
-	return option.WithCredentialsJSON(bs), nil
+	return option.WithAuthCredentialsJSON(rewrited.credentialsType(), bs), nil
 }
 
 func (mgr *CredentialsManager) rewriteCredentialSource(cred *credentials) (*credentials, error) {
@@ -358,7 +373,7 @@ func (mgr *CredentialsManager) getProxyServerAddress() (string, error) {
 			awsCfg, err := mgr.loadConfig(r.Context())
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(fmt.Sprintf(`{"Code": "Failed", "Message": "%s"}`, err.Error())))
+				fmt.Fprintf(w, `{"Code": "Failed", "Message": "%s"}`, err.Error())
 				return
 			}
 			cloned := awsCfg.Copy()
@@ -366,18 +381,18 @@ func (mgr *CredentialsManager) getProxyServerAddress() (string, error) {
 			cred, err := cloned.Credentials.Retrieve(r.Context())
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(fmt.Sprintf(`{"Code": "Failed", "Message": "%s"}`, err.Error())))
+				fmt.Fprintf(w, `{"Code": "Failed", "Message": "%s"}`, err.Error())
 				return
 			}
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(fmt.Sprintf(
+			fmt.Fprintf(w,
 				`{"Code": "Success", "LastUpdated":"%s", "Type": "AWS-HMAC", "AccessKeyId": "%s", "SecretAccessKey": "%s", "Token": "%s", "Expiration": "%s"}`,
 				time.Now().Format(time.RFC3339),
 				cred.AccessKeyID,
 				cred.SecretAccessKey,
 				cred.SessionToken,
 				cred.Expires.Format(time.RFC3339),
-			)))
+			)
 		})
 		mgr.proxyServer = &http.Server{
 			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
